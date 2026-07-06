@@ -106,6 +106,10 @@ namespace Tbot.Workers.Brain {
 				List<Celestial> celestialsToExclude = _calculationService.ParseCelestialsList(_tbotInstance.InstanceSettings.Brain.AutoMine.Exclude, _tbotInstance.UserData.celestials);
 				List<Celestial> celestialsToMine = new();
 				foreach (Celestial celestial in _tbotInstance.UserData.celestials.Where(p => p is Planet)) {
+					if (celestialsToExclude.Has(celestial)) {
+						DoLog(LogLevel.Information, $"Skipping {celestial.ToString()}: celestial in exclude list.");
+						continue;
+					}
 					var cel = await _tbotOgameBridge.UpdatePlanet(celestial, UpdateTypes.Buildings);
 					cel = await _tbotOgameBridge.UpdatePlanet(celestial, UpdateTypes.LFBuildings);
 					cel = await _tbotOgameBridge.UpdatePlanet(celestial, UpdateTypes.LFBonuses);					

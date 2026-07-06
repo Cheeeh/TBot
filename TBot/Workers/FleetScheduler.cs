@@ -1017,8 +1017,8 @@ if (
 							}
 						}
 
-						if (SettingsService.IsSettingSet(_tbotInstance.InstanceSettings.Brain.Transports, "RoundResources") && (bool) _tbotInstance.InstanceSettings.Brain.Transports.RoundResources) {
-							missingResources = missingResources.Round();
+						if (SettingsService.IsSettingSet(_tbotInstance.InstanceSettings.Brain.Transports, "RoundResources") && (bool) _tbotInstance.InstanceSettings.Brain.Transports.RoundResources.Active) {
+							missingResources = missingResources.Round((int) _tbotInstance.InstanceSettings.Brain.Transports.RoundResources.RoundTo);
 							idealShips = _calcService.CalcShipNumberForPayload(missingResources, preferredShip, _tbotInstance.UserData.researches.HyperspaceTechnology, _tbotInstance.UserData.serverData, cargoBonus, _tbotInstance.UserData.userInfo.Class, _tbotInstance.UserData.serverData.ProbeCargo);
 						}
 
@@ -1174,8 +1174,8 @@ if (
 							}
 						}
 
-						if (SettingsService.IsSettingSet(_tbotInstance.InstanceSettings.Brain.Transports, "RoundResources") && (bool) _tbotInstance.InstanceSettings.Brain.Transports.RoundResources) {
-							missingResources = missingResources.Round();
+						if (SettingsService.IsSettingSet(_tbotInstance.InstanceSettings.Brain.Transports, "RoundResources") && (bool) _tbotInstance.InstanceSettings.Brain.Transports.RoundResources.Active) {
+							missingResources = missingResources.Round((int) _tbotInstance.InstanceSettings.Brain.Transports.RoundResources.RoundTo);
 							idealShips = _calcService.CalcShipNumberForPayload(missingResources, preferredShip, _tbotInstance.UserData.researches.HyperspaceTechnology, _tbotInstance.UserData.serverData, cargoBonus, _tbotInstance.UserData.userInfo.Class, _tbotInstance.UserData.serverData.ProbeCargo);
 						}
 
@@ -1246,8 +1246,9 @@ if (
 			}
 		}
 
-		public async Task Collect(bool noLimit = false) {
-			await CollectImpl(true, noLimit);
+		public async Task Collect(bool noLimit = false, Celestials specificCelestialType = Celestials.None) {
+			_tbotInstance.UserData.fleets = await UpdateFleets();
+			await CollectImpl(true, noLimit, specificCelestialType);
 		}
 
 		public async Task CollectDeut(long MinAmount = 0) {
@@ -1333,7 +1334,7 @@ if (
 			}
 		}
 
-		public async Task<RepatriateCode> CollectImpl(bool fromTelegram, bool noLimit = false) {
+		public async Task<RepatriateCode> CollectImpl(bool fromTelegram, bool noLimit = false, Celestials specificCelestialType = Celestials.None) {
 			try {
 				_tbotInstance.log(LogLevel.Information, LogSender.FleetScheduler, "Repatriating resources...");
 
@@ -1359,6 +1360,7 @@ if (
 					List<Celestial> celestialList = _tbotInstance.UserData.celestials.ToList();
 					
 					celestialList = (bool) _tbotInstance.InstanceSettings.Brain.AutoRepatriate.RandomOrder ? celestialList.Shuffle().ToList() : celestialList.ToList();
+					celestialList = (specificCelestialType != Celestials.None) ? celestialList.Where(c => c.Coordinate.Type == specificCelestialType).ToList() : celestialList.ToList();
 					
 					foreach (Celestial celestial in celestialList) {
 						List<Celestial> closestCelestials = tempCelestials
@@ -1459,7 +1461,7 @@ if (
 					_tbotInstance.UserData.celestials = newCelestials;
 					if (fromTelegram) {
 						if ((TotalMet > 0) || (TotalCri > 0) || (TotalDeut > 0)) {
-							await _tbotInstance.SendTelegramMessage($"Resources sent!:\n{TotalMet} Metal\n{TotalCri} Crystal\n{TotalDeut} Deuterium");
+							await _tbotInstance.SendTelegramMessage($"Resources sent!:\n{TotalMet.ToString("N0")} Metal\n{TotalCri.ToString("N0")} Crystal\n{TotalDeut.ToString("N0")} Deuterium");
 						} else {
 							await _tbotInstance.SendTelegramMessage("No resources sent");
 						}

@@ -4916,10 +4916,8 @@ namespace Tbot.Includes {
 			} else {
 				if (actualFeature.Rank > 0) {
 					_logger.WriteLog(LogLevel.Information, logsender, $"Slots Total: {slots.Total}, Reserved: {reservedSlots + slotsToLeaveFree}, Other: {usedSlots + otherSlots}. Available: {slotsAvailable}.");
-					if (slotsAvailable < actualFeature.MaxSlots) {
+					if (slotsAvailable < actualFeature.MaxSlots)
 						_logger.WriteLog(LogLevel.Information, logsender, $"Less slots available ({slotsAvailable}) than maximum usable slots ({actualFeature.MaxSlots}). Stepping down to usable slots.");
-						actualFeature.MaxSlots = slotsAvailable;
-					}
 					slotsAvailable = Math.Min(slotsAvailable, actualFeature.MaxSlots - actualFeature.SlotsUsed);
 					_logger.WriteLog(LogLevel.Information, logsender, $"{feature} will use {slotsAvailable} slots ({actualFeature.SlotsUsed}/{actualFeature.MaxSlots} already used).");
 				} else {
@@ -4972,7 +4970,7 @@ namespace Tbot.Includes {
 							Celestials.Moon
 						)
 					));
-				destination.Resources = roundRes ? destination.Resources.Round() : destination.Resources;
+				destination.Resources = roundRes ? destination.Resources.Round(transportSettings.RoundTo) : destination.Resources;
 				if (destination.Resources.IsEnoughFor(missingResources)) {
 					if (destination.Ships.GetAmount(transportSettings.CargoType) >= CalcShipNumberForPayload(missingResources, transportSettings.CargoType, userData.researches.HyperspaceTechnology, userData.serverData, destination.LFBonuses.GetShipCargoBonus(transportSettings.CargoType), userData.userInfo.Class, userData.serverData.ProbeCargo)) {
 						result.Add(new Dictionary<Celestial, Resources> { { destination, missingResources } } );
@@ -5022,10 +5020,10 @@ namespace Tbot.Includes {
 				Celestial cel = closestCelestials[i];
 				Resources celResources = cel.Resources.Difference(new Resources(0, 0, transportSettings.DeutToLeave));
 				if (resources.Sum(celResources).IsEnoughFor(missingResources)) {
-					celResources = roundRes ? missingResources.Difference(resources).Round() : missingResources.Difference(resources);
+					celResources = roundRes ? missingResources.Difference(resources).Round(transportSettings.RoundTo) : missingResources.Difference(resources);
 				} else {
 					celResources = roundRes ?
-						celResources.Difference(celResources.Difference(missingResources.Difference(resources))).Round():
+						celResources.Difference(celResources.Difference(missingResources.Difference(resources))).Round(transportSettings.RoundTo):
 						celResources.Difference(celResources.Difference(missingResources.Difference(resources)));
 				}
 				if (celResources.TotalResources < transportSettings.MultipleOrigin.MinimumResourcesToSend || celResources.TotalResources == 0) {

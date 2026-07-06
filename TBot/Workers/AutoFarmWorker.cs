@@ -1107,8 +1107,14 @@ namespace Tbot.Workers {
 					} else {
 						var time = await _tbotOgameBridge.GetDateTime();
 						_tbotInstance.UserData.fleets = await _fleetScheduler.UpdateFleets();
+						Buildables cargoShip = Buildables.LargeCargo;
+						if (!Enum.TryParse<Buildables>((string) _tbotInstance.InstanceSettings.AutoFarm.CargoType, true, out cargoShip))
+							cargoShip = Buildables.LargeCargo;
+						if (cargoShip == Buildables.EspionageProbe && _tbotInstance.UserData.serverData.ProbeCargo == 0)
+							cargoShip = Buildables.LargeCargo;
 						List<Fleet> orderedFleets = _tbotInstance.UserData.fleets
 							.Where(fleet => fleet.Mission == Missions.Attack)
+							.Where(fleet => fleet.Ships.GetDifferentTypeShips() == 1 && cargoShip != Buildables.Null && fleet.Ships.GetAmount(cargoShip) > 0)
 							.ToList();
 						orderedFleets = orderedFleets
 							.OrderByDescending(fleet => fleet.BackIn)

@@ -36,9 +36,11 @@ namespace Tbot.Workers.Brain {
 			try {
 				DoLog(LogLevel.Information, "Running autodefence...");
 
+				_tbotInstance.UserData.celestials = await _tbotOgameBridge.GetEmpire();
 				List<Celestial> newCelestials = _tbotInstance.UserData.celestials.ToList();
 				List<Celestial> celestialsToExclude = _calculationService.ParseCelestialsList(_tbotInstance.InstanceSettings.Brain.AutoDefence.Exclude, _tbotInstance.UserData.celestials);
 
+				long maxConstructionTime = (long) _tbotInstance.InstanceSettings.Brain.AutoDefence.MaxConstructionTime *60 *60; // convert hours to seconds
 				Defences neededDefences = new(
 					(long) _tbotInstance.InstanceSettings.Brain.AutoDefence.DefenceToReach.RocketLauncher,
 					(long) _tbotInstance.InstanceSettings.Brain.AutoDefence.DefenceToReach.LightLaser,
@@ -57,9 +59,9 @@ namespace Tbot.Workers.Brain {
 						continue;
 					}
 
-					var tempCelestial = await _tbotOgameBridge.UpdatePlanet(celestial, UpdateTypes.Fast);
+					//var tempCelestial = await _tbotOgameBridge.UpdatePlanet(celestial, UpdateTypes.Fast);
 
-					tempCelestial = await _tbotOgameBridge.UpdatePlanet(tempCelestial, UpdateTypes.Productions);
+					var tempCelestial = await _tbotOgameBridge.UpdatePlanet(celestial, UpdateTypes.Productions);
 					if (tempCelestial.HasProduction()) {
 						DoLog(LogLevel.Warning, $"Skipping {tempCelestial.ToString()}: there is already a production ongoing.");
 						foreach (Production production in tempCelestial.Productions) {
@@ -75,10 +77,10 @@ namespace Tbot.Workers.Brain {
 						continue;
 					}
 
-					tempCelestial = await _tbotOgameBridge.UpdatePlanet(tempCelestial, UpdateTypes.Ships);
+					/*tempCelestial = await _tbotOgameBridge.UpdatePlanet(tempCelestial, UpdateTypes.Ships);
 					tempCelestial = await _tbotOgameBridge.UpdatePlanet(tempCelestial, UpdateTypes.Defences);
 					tempCelestial = await _tbotOgameBridge.UpdatePlanet(tempCelestial, UpdateTypes.Resources);
-					tempCelestial = await _tbotOgameBridge.UpdatePlanet(tempCelestial, UpdateTypes.LFBonuses);
+					tempCelestial = await _tbotOgameBridge.UpdatePlanet(tempCelestial, UpdateTypes.LFBonuses);*/
 
 					var capacity = _calculationService.CalcFleetCapacity(tempCelestial.Ships, _tbotInstance.UserData.serverData, _tbotInstance.UserData.researches.HyperspaceTechnology, tempCelestial.LFBonuses, _tbotInstance.UserData.userInfo.Class, _tbotInstance.UserData.serverData.ProbeCargo);
 					if (tempCelestial.Coordinate.Type == Celestials.Moon && (bool) _tbotInstance.InstanceSettings.Brain.AutoDefence.ExcludeMoons) {
@@ -95,6 +97,26 @@ namespace Tbot.Workers.Brain {
 						if (!tempCelestial.Resources.IsEnoughFor(defenceCost)) {
 							DoLog(LogLevel.Information, $"{tempCelestial.ToString()}: Not enough resources to build all defences. Will build only what is possible.");
 							defencesToBuild = _calculationService.CalcmaxDefencesBuildable(defencesToBuild, tempCelestial.Resources);
+						}
+						long totalProductionTime = 0;
+						if (maxConstructionTime > 0) {
+							Defences defToBuildTemp = defencesToBuild.Clone();
+							foreach (var (defenceType, amountNeeded) in defencesToBuild.GetDefenceTypesWithAmount()) {
+								long tempDuration = _calculationService.CalcProductionTime(defenceType, 1, _tbotInstance.UserData.serverData.SpeedResearch, tempCelestial.Facilities, 0, _tbotInstance.UserData.userInfo.Class == CharacterClass.Discoverer, _tbotInstance.UserData.staff.Technocrat);
+								if (tempDuration > maxConstructionTime - totalProductionTime) {
+									defencesToBuild.SetAmount(defenceType, 0);
+								} else if (tempDuration == maxConstructionTime - totalProductionTime) {
+									defencesToBuild.SetAmount(defenceType, 1);
+								} else {
+									if (tempDuration *amountNeeded > maxConstructionTime - totalProductionTime) {
+										defencesToBuild.SetAmount(defenceType, (long) Math.Round((double) (maxConstructionTime - totalProductionTime) / tempDuration, MidpointRounding.ToZero));
+									}
+								}
+								totalProductionTime += tempDuration *defencesToBuild.GetAmount(defenceType);
+							}
+							if (!defToBuildTemp.Difference(defencesToBuild).IsEmpty()) {
+								DoLog(LogLevel.Information, $"{tempCelestial.ToString()}: Not enough time to build all defences. Will build only what is possible: {defencesToBuild.ToString()}");
+							}
 						}
 						if (defencesToBuild.IsEmpty()) {
 							DoLog(LogLevel.Information, $"{tempCelestial.ToString()}: Not enough resources to build any defence.");

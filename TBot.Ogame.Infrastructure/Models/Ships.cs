@@ -193,6 +193,15 @@ namespace TBot.Ogame.Infrastructure.Models {
 			}
 			return output;
 		}
+
+		public int GetDifferentTypeShips() {
+			int output = 0;
+			foreach (PropertyInfo prop in this.GetType().GetProperties()) {
+				if ((long) prop.GetValue(this) > 0)
+					output++;
+			}
+			return output;
+		}
 	}
 
 }

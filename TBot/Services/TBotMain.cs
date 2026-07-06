@@ -360,7 +360,10 @@ namespace Tbot.Services {
 
 		public override string ToString() {
 			if (loggedIn && (userData.userInfo != null) && (userData.serverData != null))
-				return $"{userData.userInfo.PlayerName}@{userData.serverData.Name}";
+				if ((bool) InstanceSettings.General.HideAccountAndUniverseNameInLogs)
+					return "";
+				else
+					return $"{userData.userInfo.PlayerName}@{userData.serverData.Name}";
 			else
 				return $"{InstanceAlias}";
 		}
@@ -971,8 +974,16 @@ namespace Tbot.Services {
 			}
 		}
 
-		public void TelegramCollect(bool noLimit = false) {
-			_fleetScheduler.Collect(noLimit);
+		public void TelegramCollect(bool noLimit = false, string celestialType = null) {
+			if (!string.IsNullOrEmpty(celestialType)) {
+				if (!Enum.TryParse(celestialType, true, out Celestials celestialTypeEnum)) {
+					SendTelegramMessage($"Invalid celestial type: {celestialType}. Valid types are: Planet, Moon. Or just /collect");
+					return;
+				}
+				_fleetScheduler.Collect(noLimit, celestialTypeEnum);
+			} else {
+				_fleetScheduler.Collect(noLimit);
+			}
 			return;
 		}
 

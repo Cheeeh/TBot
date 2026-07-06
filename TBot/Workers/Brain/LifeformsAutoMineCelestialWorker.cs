@@ -241,7 +241,7 @@ namespace Tbot.Workers.Brain {
 												}
 												if (origin.ID != 0) {
 													if (origin.Resources.IsEnoughFor(missingResources)) {
-														missingResources = _tbotInstance.InstanceSettings.Brain.Transports.RoundResources ? missingResources.Round() : missingResources;
+														missingResources = _tbotInstance.InstanceSettings.Brain.Transports.RoundResources.Active ? missingResources.Round((int) _tbotInstance.InstanceSettings.Brain.Transports.RoundResources.RoundTo) : missingResources;
 														Buildables preferredShip = Buildables.SmallCargo;
 														if (!Enum.TryParse<Buildables>((string) _tbotInstance.InstanceSettings.Brain.Transports.CargoType, true, out preferredShip)) {
 															_tbotInstance.log(LogLevel.Warning, LogSender.FleetScheduler, "Unable to parse CargoType. Falling back to default SmallCargo");
@@ -299,7 +299,8 @@ namespace Tbot.Workers.Brain {
 													TransportSettings transportsSettings = new((bool) _tbotInstance.InstanceSettings.Brain.Transports.Active,
 														preferredShip,
 														(long) _tbotInstance.InstanceSettings.Brain.Transports.DeutToLeaveOnMoons,
-														(bool) _tbotInstance.InstanceSettings.Brain.Transports.RoundResources,
+														(bool) _tbotInstance.InstanceSettings.Brain.Transports.RoundResources.Active,
+														(int) _tbotInstance.InstanceSettings.Brain.Transports.RoundTo,
 														(bool) _tbotInstance.InstanceSettings.Brain.Transports.SendToTheMoonIfPossible,
 														origin,
 														(long) _tbotInstance.InstanceSettings.Brain.Transports.MaxSlots,

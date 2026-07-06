@@ -97,7 +97,7 @@ namespace TBot.Ogame.Infrastructure.Models {
 			return this;
 		}
 
-		public long GetAmount(Defences buildable) {
+		public long GetAmount(Buildables buildable) {
 			foreach (PropertyInfo prop in this.GetType().GetProperties()) {
 				if (prop.Name == buildable.ToString()) {
 					return (long) prop.GetValue(this);
@@ -106,7 +106,7 @@ namespace TBot.Ogame.Infrastructure.Models {
 			return 0;
 		}
 
-		public void SetAmount(Defences buildable, long number) {
+		public void SetAmount(Buildables buildable, long number) {
 			foreach (PropertyInfo prop in this.GetType().GetProperties()) {
 				if (prop.Name == buildable.ToString()) {
 					prop.SetValue(this, number);
@@ -115,7 +115,7 @@ namespace TBot.Ogame.Infrastructure.Models {
 			}
 		}
 
-		public bool HasAtLeast(Defences defences, long times = 1) {
+		public bool HasAtLeast(Buildables defences, long times = 1) {
 			foreach (PropertyInfo prop in this.GetType().GetProperties()) {
 				if ((long) prop.GetValue(this) * times < (long) prop.GetValue(defences)) {
 					return false;
@@ -192,6 +192,20 @@ namespace TBot.Ogame.Infrastructure.Models {
 					defenceTypes.Add(buildable, amount);
 			}
 			return defenceTypes;
+		}
+		public Defences Clone() {
+			return new Defences(
+				RocketLauncher,
+				LightLaser,
+				HeavyLaser,
+				GaussCannon,
+				IonCannon,
+				PlasmaTurret,
+				SmallShieldDome,
+				LargeShieldDome,
+				AntiBallisticMissiles,
+				InterplanetaryMissiles
+			);
 		}
 	}
 }

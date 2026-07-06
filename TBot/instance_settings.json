@@ -21,7 +21,7 @@
 			"Height": 1080,
 			"Timezone": "Europe/London",
 			"Lang": "en"
-		  }
+		}
 	},
 	"General": {
 		"Host": "localhost",
@@ -36,6 +36,7 @@
 		},
 		"CaptchaAPIKey": "",
 		"CustomTitle": "",
+		"HideAccountAndUniverseNameInLogs": false,
 		"SlotsToLeaveFree": 1,
 		"SlotPriorityLevel": {
 			"Brain": 2,
@@ -86,7 +87,8 @@
 			"Active": true,
 			"TelegramMessenger": {
 				"Active": false
-			}
+			},
+			"DelayFleetSaveIfImpactOccurLaterThanNextCheck": true
 		},
 		"WhiteList": [
 			0,
@@ -119,7 +121,10 @@
 			"Active": true,
 			"CargoType": "SmallCargo",
 			"DeutToLeaveOnMoons": 1000000,
-			"RoundResources": true,
+			"RoundResources": {
+				"Active": true,
+				"RoundTo": 10000
+			},
 			"SendToTheMoonIfPossible": false,
 			"Origin": {
 				"Galaxy": 3,
@@ -308,6 +313,7 @@
 			"Active": false,
 			"ExcludeMoons": true,
 			"RandomOrder": true,
+			"MaxConstructionTime": 2880,
 			"DefenceToReach": {
 				"RocketLauncher": 100000,
 				"HeavyLaser": 10000,
@@ -545,13 +551,19 @@
 		"Active": false,
 		"Origin": [
 			{
+				"Galaxy": 1,
+				"System": 234,
+				"Position": 5,
+				"Type": "Planet"
+			},
+			{
 				"Galaxy": 5,
 				"System": 64,
 				"Position": 8,
 				"Type": "Planet"
 			}
 		],
-		"MaxSlots": 5,
+		"MaxSlots": 15,
 		"MaxFailures": 5,
 		"RandomizeDestination": false,
 		"CheckIntervalMin": 30,

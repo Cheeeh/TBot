@@ -919,8 +919,16 @@ namespace Tbot.Services {
 
 
 							case "/collect":
-								if (message.Text.Split(' ').Length != 1) {
+								if (message.Text.Split(' ').Length > 2) {
 									await SendMessage(botClient, message.Chat, "No argument accepted with this command!");
+									return;
+								}
+								if (message.Text.Split(' ').Length == 1) {
+									currInstance.TelegramCollect();
+									return;
+								}
+								if (message.Text.Split(' ').Length == 2) {
+									currInstance.TelegramCollect(false, message.Text.Split(' ')[1]);
 									return;
 								}
 
@@ -929,8 +937,16 @@ namespace Tbot.Services {
 
 
 							case "/collectall":
-								if (message.Text.Split(' ').Length != 1) {
+								if (message.Text.Split(' ').Length > 2) {
 									await SendMessage(botClient, message.Chat, "No argument accepted with this command!");
+									return;
+								}
+								if (message.Text.Split(' ').Length == 1) {
+									currInstance.TelegramCollect(true);
+									return;
+								}
+								if (message.Text.Split(' ').Length == 2) {
+									currInstance.TelegramCollect(true, message.Text.Split(' ')[1]);
 									return;
 								}
 
