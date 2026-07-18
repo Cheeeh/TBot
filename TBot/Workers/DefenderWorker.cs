@@ -335,7 +335,7 @@ namespace Tbot.Workers {
 					try {
 						int intervalMin = (int) _tbotInstance.InstanceSettings.Defender.CheckIntervalMin;
 						int intervalMax = (int) _tbotInstance.InstanceSettings.Defender.CheckIntervalMax;
-						DoLog(LogLevel.Warning, $"Attack arrives in {attack.ArriveIn} minutes, next check will be in {(intervalMax *60) +(intervalMin *60 > 120 ? 120 : intervalMin *60)} minutes MAX");
+						DoLog(LogLevel.Warning, $"Attack arrives in {attack.ArriveIn} seconds, next check will be in {(intervalMax *60) +(intervalMin *60 > 120 ? 120 : intervalMin *60)} seconds MAX");
 						if (attack.ArriveIn > (intervalMax *60) +(intervalMin *60 > 120 ? 120 : intervalMin *60)) {
 							if ((bool) _tbotInstance.InstanceSettings.Defender.TelegramMessenger.Active)
 								await _tbotInstance.SendTelegramMessage($"Delaying FleetSave on {attack.Destination.ToString()} arriving at {attack.ArrivalTime.ToString()}");
@@ -343,8 +343,8 @@ namespace Tbot.Workers {
 							return;
 						} else {
 							if ((bool) _tbotInstance.InstanceSettings.Defender.TelegramMessenger.Active)
-								await _tbotInstance.SendTelegramMessage($"To late to delay fleetsave: impact in {attack.ArriveIn} minutes, under the limite: {(intervalMax *60) +(intervalMin *60 > 120 ? 120 : intervalMin *60)} minutes MAX");
-							DoLog(LogLevel.Warning, $"To late to delay fleetsave: impact in {attack.ArriveIn} minutes, under the limite: {(intervalMax *60) +(intervalMin *60 > 120 ? 120 : intervalMin *60)} minutes MAX");
+								await _tbotInstance.SendTelegramMessage($"To late to delay fleetsave: impact in {attack.ArriveIn} seconds, under the limite: {(intervalMax *60) +(intervalMin *60 > 120 ? 120 : intervalMin *60)} seconds MAX");
+							DoLog(LogLevel.Warning, $"To late to delay fleetsave: impact in {attack.ArriveIn} seconds, under the limite: {(intervalMax *60) +(intervalMin *60 > 120 ? 120 : intervalMin *60)} seconds MAX");
 						}
 					} catch (Exception e) {
 						DoLog(LogLevel.Error, $"Could not DELAY fleetsave: an exception has occurred: {e.Message}");
