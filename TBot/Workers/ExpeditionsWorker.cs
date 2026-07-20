@@ -120,8 +120,7 @@ namespace Tbot.Workers {
 							(int)_tbotInstance.UserData.fleets.Count(f => f.Mission == Missions.Harvest))
 					};
 
-					int MaxSlots = _tbotInstance.UserData.slots.Total
-					- (int) _tbotInstance.InstanceSettings.General.SlotsToLeaveFree;
+					int MaxSlots = _calculationService.CalcSlotsPriority(Feature.Expeditions, rankSlotsPriority, _tbotInstance.UserData.slots, _tbotInstance.UserData.fleets, (int) _tbotInstance.InstanceSettings.General.SlotsToLeaveFree);
 
 					if (MaxSlots < 0)
 						MaxSlots = 0;
