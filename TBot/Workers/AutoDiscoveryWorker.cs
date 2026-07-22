@@ -5,7 +5,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Tbot.Helpers;
 using Tbot.Includes;
 using Tbot.Services;
@@ -41,14 +44,19 @@ namespace Tbot.Workers {
 			var rand = new Random();
 			try {
 				DoLog(LogLevel.Information, $"Starting AutoDiscovery...");
-				if (_tbotInstance.UserData.discoveryBlackList == null) {
-					_tbotInstance.UserData.discoveryBlackList = new Dictionary<Coordinate, DateTime>();
-				} else {
-					if (_tbotInstance.UserData.discoveryBlackList.First().Value < DateTime.Now || _tbotInstance.UserData.discoveryBlackList.Last().Value < DateTime.Now) {
-						foreach(var (blacklistedCoord, blacklistedTime) in _tbotInstance.UserData.discoveryBlackList.ToList()) {
-							if (blacklistedTime < DateTime.Now)
-								_tbotInstance.UserData.discoveryBlackList.Remove(blacklistedCoord);
-						}
+				Dictionary<Coordinate, DateTime> discoveryBlackList;
+				try {
+					discoveryBlackList = await _tbotInstance.AnyData(Feature.AutoDiscovery, "discoveryBlackList", _tbotInstance.InstanceAlias) ?
+											JsonConvert.DeserializeObject<Dictionary<Coordinate, DateTime>>(await _tbotInstance.ReadData(Feature.AutoDiscovery, "discoveryBlackList", _tbotInstance.InstanceAlias)) :
+											new();
+				} catch (Exception ex) {
+					DoLog(LogLevel.Warning, $"Cannot read discoveryBlackList: {ex.Message}");
+					discoveryBlackList = new();
+				}
+				if (discoveryBlackList.Count > 0) {
+					foreach(var (blacklistedCoord, blacklistedTime) in discoveryBlackList.ToList()) {
+						if (blacklistedTime < DateTime.Now)
+							discoveryBlackList.Remove(blacklistedCoord);
 					}
 				}
 				if (!_tbotInstance.UserData.isSleeping) {
@@ -199,7 +207,7 @@ namespace Tbot.Workers {
 							}
 						}
 
-						destinationCoord = destinationCoord.Where(c => !_tbotInstance.UserData.discoveryBlackList.Keys.Any(k => k.Galaxy == c.Key.Galaxy && k.System == c.Key.System && k.Position == c.Key.Position))
+						destinationCoord = destinationCoord.Where(c => !discoveryBlackList.Keys.Any(k => k.Galaxy == c.Key.Galaxy && k.System == c.Key.System && k.Position == c.Key.Position))
 										.OrderBy(c => _calculationService.CalcDistance(new Coordinate { Galaxy = c.Value.Coordinate.Galaxy, System = c.Value.Coordinate.System }, new Coordinate { Galaxy = c.Key.Galaxy, System = c.Key.System }, _tbotInstance.UserData.serverData))
 										.ThenBy(c => c.Value.Coordinate.Galaxy)
 										.ThenBy(c => c.Value.Coordinate.System)
@@ -222,18 +230,18 @@ namespace Tbot.Workers {
 							dest.Add(destinationCoord.Values.First(), destinationCoord.Keys.First());
 							destinationCoord.Remove(destinationCoord.Keys.First());
 						}
-						Coordinate blacklistedCoord = _tbotInstance.UserData.discoveryBlackList.Keys.SingleOrDefault(c => c.Galaxy == dest.Values.First().Galaxy && c.System == dest.Values.First().System && c.Position == dest.Values.First().Position);
+						Coordinate blacklistedCoord = discoveryBlackList.Keys.SingleOrDefault(c => c.Galaxy == dest.Values.First().Galaxy && c.System == dest.Values.First().System && c.Position == dest.Values.First().Position);
 						if (blacklistedCoord != null) {
-							if (_tbotInstance.UserData.discoveryBlackList[blacklistedCoord] > DateTime.Now) {
+							if (discoveryBlackList[blacklistedCoord] > DateTime.Now) {
 								skips++;
 								continue;
 							} else {
-								_tbotInstance.UserData.discoveryBlackList.Remove(blacklistedCoord);
+								discoveryBlackList.Remove(blacklistedCoord);
 							}
 						}
 
 						var result = await _ogameService.SendDiscovery(dest.Keys.First(), dest.Values.First());
-						_tbotInstance.UserData.discoveryBlackList.Add(dest.Values.First(), DateTime.Now.AddDays(7));
+						discoveryBlackList.Add(dest.Values.First(), DateTime.Now.AddDays(7));
 						if (!result) {
 							DoLog(LogLevel.Warning, $"Failed to send discovery fleet to {dest.Values.First().ToString()} from {dest.Keys.First().ToString()}.");
 						} else {
@@ -252,6 +260,12 @@ namespace Tbot.Workers {
 
 					if (skips > 0)
 						DoLog(LogLevel.Information, $"{skips} positions skipped (blacklisted)");
+
+					try {
+						await _tbotInstance.WriteData(Feature.AutoDiscovery, "discoveryBlackList", discoveryBlackList, _tbotInstance.InstanceAlias);
+					} catch (Exception ex) {
+						DoLog(LogLevel.Error, $"discoveryBlackList save failed: {ex.GetType().Name}: {ex.Message}");
+					}
 
 					_tbotInstance.UserData.fleets = await _fleetScheduler.UpdateFleets();
 					long interval = (_tbotInstance.UserData.fleets.Where(f => f.Mission == Missions.Discovery).OrderByDescending(f => f.BackIn).ToList().First().BackIn * 1000 ?? 0) + RandomizeHelper.CalcRandomInterval(IntervalType.SomeSeconds);

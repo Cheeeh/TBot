@@ -35,5 +35,8 @@ namespace Tbot.Services {
 		Task ListProfiles();
 		Task LoadProfile(List<string> profileName);
 		Task ResetProfile();
+		Task<bool> AnyData(Feature feature = Feature.Null, string fileName = null, string instanceName = null);
+		Task<string> ReadData(Feature feature = Feature.Null, string fileName = null, string instanceName = null);
+		Task<bool> WriteData(Feature feature = Feature.Null, string fileName = null, dynamic content = null, string instanceName = null);
 	}
 }

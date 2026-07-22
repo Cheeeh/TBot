@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Tbot.Common.Extensions;
 using Tbot.Common.Settings;
@@ -270,7 +271,7 @@ namespace Tbot.Services {
 			await Task.Delay(RandomizeHelper.CalcRandomInterval(IntervalType.AFewSeconds));
 
 			loggedIn = true;
-			log(LogLevel.Information, LogSender.Tbot, "Logged in!");			
+			log(LogLevel.Information, LogSender.Tbot, "Logged in!");
 
 			await InitUserData();
 
@@ -294,6 +295,8 @@ namespace Tbot.Services {
 			userData.researches = await _tbotOgameBridge.UpdateResearches();
 			userData.scheduledFleets = new();
 			userData.farmTargets = new();
+			userData.suitableTargets = new();
+			userData.runningProfiles = new();
 
 			if (userData.celestials.Count == 1) {
 				await EditSettings(userData.celestials.First());
@@ -683,6 +686,54 @@ namespace Tbot.Services {
 					await HandleSleepModeAsync(null);
 				}
 				_settingsReloadSemaphore.Release();
+			}
+		}
+
+		public async Task<bool> AnyData(Feature feature = Feature.Null, string fileName = null, string instanceName = null) {
+			if (feature == Feature.Null || fileName == null || instanceName == null)
+				return false;
+			string profilesDir = Path.Combine(Path.GetDirectoryName(InstanceSettingsPath), "data", instanceName, feature.ToString());
+			if (Directory.Exists(profilesDir)) {
+				return File.Exists(Path.Combine(profilesDir, fileName +".json"));
+			} else {
+				log(LogLevel.Warning, LogSender.Tbot, "Profiles directory not found.");
+				return false;
+			}
+		}
+
+		public async Task<string> ReadData(Feature feature = Feature.Null, string fileName = null, string instanceName = null) {
+			if (feature == Feature.Null || fileName == null || instanceName == null)
+				throw new Exception($"No feature, fileName or instanceName given");
+			string profilesDir = Path.Combine(Path.GetDirectoryName(InstanceSettingsPath), "data", instanceName, feature.ToString());
+			if (Directory.Exists(profilesDir)) {
+				if (File.Exists(Path.Combine(profilesDir, fileName +".json"))) {
+					var json = await SettingsService.GetSettingsFileContents(Path.Combine(profilesDir, fileName +".json"));
+					return json;
+				} else {
+					throw new Exception($"The file doesn't exist");
+				}
+			} else {
+				log(LogLevel.Warning, LogSender.Tbot, "Profiles directory not found.");
+				throw new Exception($"No data or feature folder");
+			}
+		}
+
+		public async Task<bool> WriteData(Feature feature = Feature.Null, string fileName = null, dynamic content = null, string instanceName = null) {
+			if (feature == Feature.Null || fileName == null || instanceName == null)
+				throw new Exception($"No feature, fileName or instanceName given");
+			if (content == null)
+				throw new Exception($"No content/data given");
+
+			string profilesDir = Path.Combine(Path.GetDirectoryName(InstanceSettingsPath), "data", instanceName, feature.ToString());
+			if (!Directory.Exists(profilesDir))
+				Directory.CreateDirectory(profilesDir);
+
+			try {
+				await SettingsService.WriteSettings(Path.Combine(profilesDir, fileName +".json"), Newtonsoft.Json.JsonConvert.SerializeObject(content));
+				return true;
+			} catch (Exception ex) {
+				log(LogLevel.Warning, LogSender.Tbot, $"Cannot write data: {ex.Message}");
+				throw;
 			}
 		}
 

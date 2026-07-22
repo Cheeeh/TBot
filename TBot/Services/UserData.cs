@@ -23,7 +23,7 @@ namespace Tbot.Services {
 
 		public List<FleetSchedule> scheduledFleets;
 		public List<FarmTarget> farmTargets;
-		public Dictionary<Coordinate, DateTime> discoveryBlackList;
+		public List<FarmTarget> suitableTargets;
 		public List<string> runningProfiles;
 		public float lastDOIR;
 		public float nextDOIR;
