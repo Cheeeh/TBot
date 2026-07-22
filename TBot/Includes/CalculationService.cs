@@ -4916,8 +4916,10 @@ namespace Tbot.Includes {
 			} else {
 				if (actualFeature.Rank > 0) {
 					_logger.WriteLog(LogLevel.Information, logsender, $"Slots Total: {slots.Total}, Reserved: {reservedSlots + slotsToLeaveFree}, Other: {usedSlots + otherSlots}. Available: {slotsAvailable}.");
-					if (slotsAvailable < actualFeature.MaxSlots)
+					if (slotsAvailable < actualFeature.MaxSlots) {
 						_logger.WriteLog(LogLevel.Information, logsender, $"Less slots available ({slotsAvailable}) than maximum usable slots ({actualFeature.MaxSlots}). Stepping down to usable slots.");
+						actualFeature.MaxSlots = slotsAvailable;
+					}
 					slotsAvailable = Math.Min(slotsAvailable, actualFeature.MaxSlots - actualFeature.SlotsUsed);
 					_logger.WriteLog(LogLevel.Information, logsender, $"{feature} will use {slotsAvailable} slots ({actualFeature.SlotsUsed}/{actualFeature.MaxSlots} already used).");
 				} else {
