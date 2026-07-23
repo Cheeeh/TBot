@@ -192,6 +192,39 @@ namespace TBot.Ogame.Infrastructure.Models {
 				&& coords.Position == Coordinate.Position
 				&& coords.Type == Coordinate.Type;
 		}
-	}
 
+		public long DefenceValue() {
+			return new Defences(
+				this.RocketLauncher ?? 0,
+				this.LightLaser ?? 0,
+				this.HeavyLaser ?? 0,
+				this.GaussCannon ?? 0,
+				this.IonCannon ?? 0,
+				this.PlasmaTurret ?? 0,
+				this.SmallShieldDome ?? 0,
+				this.LargeShieldDome ?? 0
+			).GetDefencePoints() *1000;
+		}
+		public long FleetValue() {
+			return new Ships(
+				this.LightFighter ?? 0,
+				this.HeavyFighter ?? 0,
+				this.Cruiser ?? 0,
+				this.Battleship ?? 0,
+				this.Battlecruiser ?? 0,
+				this.Bomber ?? 0,
+				this.Destroyer ?? 0,
+				this.Deathstar ?? 0,
+				this.SmallCargo ?? 0,
+				this.LargeCargo ?? 0,
+				this.ColonyShip ?? 0,
+				this.Recycler ?? 0,
+				this.EspionageProbe ?? 0,
+				this.Crawler ?? 0,
+				this.Reaper ?? 0,
+				this.Pathfinder ?? 0,
+				this.SolarSatellite ?? 0
+			).GetFleetPoints() *1000;
+		}
+	}
 }

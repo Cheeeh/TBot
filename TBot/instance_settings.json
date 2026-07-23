@@ -455,7 +455,7 @@
 			{
 				"Galaxy": 1,
 				"System": 1,
-				"Planet": 1
+				"Position": 1
 			}
 		],
 		"KeepReportFor": 1440,
@@ -469,6 +469,7 @@
 			}
 		],
 		"TargetsProbedBeforeAttack": 30,
+		"ReadAllReportsEvenThoseNotScannedByTBot": false,
 		"CargoType": "LargeCargo",
 		"FleetSpeed": 100,
 		"MinCargosToKeep": 0,
@@ -476,23 +477,22 @@
 		"CargoSurplusPercentage": 10,
 		"BuildCargos": false,
 		"BuildProbes": false,
-		"MinimumResources": 1000000,
-		"MinimumPlayerRank": 500,
+		"MinimumResources": 5000000,
+		"MinimumPlayerRank": 2000,
 		"MaxFlightTime": 7200,
 		"MaxWaitTime": 7200,
 		"MinLootFuelRatio": 0.5,
 		"PreferedResource": "",
-		"MaxSlots": 18,
-		"SlotsToLeaveFree": 1,
-		"CheckIntervalMin": 30,
-		"CheckIntervalMax": 60,
-		"Blacklist": {
-			"Active": true,
-			"ResetAfterHours": 20,
-			"MinimumResourcesToNotBlacklist": 1000000,
-			"ProcessAllReports": true
+		"MaxSlots": 25,
+		"WhiteListTarget": {
+			"Active": false,
+			"MinResources": 2000000,
+			"MaxDefenceValue": 0,
+			"MaxFleetValue": 0,
+			"MaxDayToKeepWhiteList": 4
 		},
-		"StopAfterFullScan": true
+		"CheckIntervalMin": 30,
+		"CheckIntervalMax": 60
 	},
 	"AutoHarvest": {
 		"Active": false,

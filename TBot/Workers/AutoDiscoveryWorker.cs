@@ -45,11 +45,11 @@ namespace Tbot.Workers {
 				DoLog(LogLevel.Information, $"Starting AutoDiscovery...");
 				List<DiscoveryBlackList> discoveryBlackList;
 				try {
-					discoveryBlackList = await _tbotInstance.AnyData(Feature.AutoDiscovery, "discoveryBlackList", _tbotInstance.UserData.serverData.Name+"_"+_tbotInstance.UserData.userInfo.PlayerID) ?
-											JsonConvert.DeserializeObject<List<DiscoveryBlackList>>(await _tbotInstance.ReadData(Feature.AutoDiscovery, "discoveryBlackList", _tbotInstance.UserData.serverData.Name+"_"+_tbotInstance.UserData.userInfo.PlayerID)) :
+					discoveryBlackList = await _tbotInstance.AnyData(Feature.AutoDiscovery, "discoveryBlackList", _tbotInstance.UserData.serverData.Name +"_"+ _tbotInstance.UserData.userInfo.PlayerID) ?
+											JsonConvert.DeserializeObject<List<DiscoveryBlackList>>(await _tbotInstance.ReadData(Feature.AutoDiscovery, "discoveryBlackList", _tbotInstance.UserData.serverData.Name +"_"+ _tbotInstance.UserData.userInfo.PlayerID)) :
 											new();
 				} catch (Exception ex) {
-					DoLog(LogLevel.Warning, $"Cannot read discoveryBlackList: {ex.Message}");
+					DoLog(LogLevel.Warning, $"Cannot read discoveryBlackList: {ex.GetType().Name}: {ex.Message}");
 					discoveryBlackList = new();
 				}
 				if (discoveryBlackList.Count > 0) {
@@ -250,7 +250,7 @@ namespace Tbot.Workers {
 					}
 
 					try {
-						await _tbotInstance.WriteData(Feature.AutoDiscovery, "discoveryBlackList", discoveryBlackList, _tbotInstance.UserData.serverData.Name+"_"+_tbotInstance.UserData.userInfo.PlayerID);
+						await _tbotInstance.WriteData(Feature.AutoDiscovery, "discoveryBlackList", discoveryBlackList, _tbotInstance.UserData.serverData.Name +"_"+ _tbotInstance.UserData.userInfo.PlayerID);
 					} catch (Exception ex) {
 						DoLog(LogLevel.Error, $"discoveryBlackList save failed: {ex.GetType().Name}: {ex.Message}");
 					}
