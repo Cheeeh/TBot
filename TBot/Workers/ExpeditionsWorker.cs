@@ -148,15 +148,6 @@ namespace Tbot.Workers {
 
 					expsToSend = expsToSend < MaxSlots ? expsToSend : MaxSlots;
 
-					if (expsToSend <= 0) {
-						var idleInterval = RandomizeHelper.CalcRandomInterval(IntervalType.AboutFiveMinutes);
-						var nowIdle = await _tbotOgameBridge.GetDateTime();
-						DoLog(LogLevel.Information, "Expeditions idle – no free expedition slots");
-						DoLog(LogLevel.Information, $"Next expedition check at {nowIdle.AddMilliseconds(idleInterval)}");
-						ChangeWorkerPeriod(idleInterval);
-						return;
-					}
-
 					if (expsToSend > 0) {
 						if (_tbotInstance.UserData.slots.ExpFree > 0) {
 							if (_tbotInstance.UserData.slots.Free > 0) {
